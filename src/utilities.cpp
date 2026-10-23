@@ -408,3 +408,14 @@ void GitFinisher(Settings settings)
     fs::current_path(start_loc);
 }
 
+void TestCompile(Settings settings)
+{
+    fs::path start_loc = fs::current_path();
+    fs::current_path(settings.location);
+    system("make");
+    if (!fs::exists("bin/"+settings.binary_name))
+    {
+        std::cerr << "Baseline Compilation did NOT succeed.  Check code base and system environment." << std::endl;
+    }
+    fs::current_path(start_loc);
+}

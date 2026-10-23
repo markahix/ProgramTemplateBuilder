@@ -15,6 +15,9 @@ int main(int argc, char** argv)
     // generate basic code templates and standard functionalities.
     WriteSourceFiles(settings.location, settings.binary_name);
 
+    // Validate basic compilation is successful
+    TestCompile(settings);
+
     // Generate README.md
     GenerateReadme(settings);
 

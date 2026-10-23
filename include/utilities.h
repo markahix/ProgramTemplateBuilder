@@ -32,6 +32,9 @@ void CreateMakefile(std::string location, std::string binary_name);
 // Write source cpp files.
 void WriteSourceFiles(std::string location, std::string binary_name);
 
+// Validate successful baseline compilation
+void TestCompile(Settings settings);
+
 // Generate basic README.md template for user to fill
 void GenerateReadme(Settings settings);
 
