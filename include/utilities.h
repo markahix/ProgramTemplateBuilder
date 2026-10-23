@@ -24,13 +24,13 @@ class Settings
 };
 
 // Handle Directories
-void CreateDirectoryStructure(std::string location);
+void CreateDirectoryStructure(Settings settings);
 
 // Write non-source files.
-void CreateMakefile(std::string location, std::string binary_name);
+void CreateMakefile(Settings settings);
 
 // Write source cpp files.
-void WriteSourceFiles(std::string location, std::string binary_name);
+void WriteSourceFiles(Settings settings);
 
 // Validate successful baseline compilation
 void TestCompile(Settings settings);

@@ -35,9 +35,9 @@ Settings::~Settings()
 
 }
 
-void CreateDirectoryStructure(std::string location)
+void CreateDirectoryStructure(Settings settings)
 {
-    fs::path workdir(location);
+    fs::path workdir(settings.location);
     fs::create_directory(workdir);
     fs::create_directory(workdir / "src/");
     fs::create_directory(workdir / "include/");
@@ -45,9 +45,9 @@ void CreateDirectoryStructure(std::string location)
     fs::create_directory(workdir / "bin/");
 }
 
-void CreateMakefile(std::string location, std::string binary_name)
+void CreateMakefile(Settings settings)
 {
-    fs::path Makefile(location);
+    fs::path Makefile(settings.location);
     Makefile /= "Makefile";
     std::ofstream ofile(Makefile,std::ios::out);
     if (!ofile.is_open())
@@ -61,7 +61,7 @@ OBJ_DIR := obj
 BIN_DIR := bin
 INS_DIR := /usr/local/bin
 
-EXE := $(BIN_DIR)/)""" << binary_name << R"""(
+EXE := $(BIN_DIR)/)""" << settings.binary_name << R"""(
 SRC := $(wildcard $(SRC_DIR)/*.cpp)
 OBJ := $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
@@ -87,16 +87,16 @@ clean:
 	@$(RM) -rv $(BIN_DIR) $(OBJ_DIR)
 
 install: $(EXE)
-	ln -sf $(abspath $(EXE)) $(INS_DIR)/)""" << binary_name << R"""(
+	ln -sf $(abspath $(EXE)) $(INS_DIR)/)""" << settings.binary_name << R"""(
 
 -include $(OBJ:.o=.d)
 )""";
     ofile.close();
 }
 
-void write_main_cpp(std::string location, std::string binary_name)
+void write_main_cpp(Settings settings)
 {
-    fs::path sourcefile = location;
+    fs::path sourcefile = settings.location;
     sourcefile /= "src/main.cpp";
     std::ofstream outfile(sourcefile,std::ios::out);
     if (!outfile.is_open())
@@ -106,7 +106,7 @@ void write_main_cpp(std::string location, std::string binary_name)
     }
     outfile << R"""(
 /*
-  main.cpp for )""" + binary_name + R"""(
+  main.cpp for )""" + settings.binary_name + R"""(
 */
 
 #include "utilities.h"
@@ -125,9 +125,9 @@ int main(int argc, char** argv)
 
 }
 
-void write_utilities_cpp(std::string location)
+void write_utilities_cpp(Settings settings)
 {
-    fs::path sourcefile = location;
+    fs::path sourcefile = settings.location;
     sourcefile /= "src/utilities.cpp";
     std::ofstream outfile(sourcefile,std::ios::out);
     if (!outfile.is_open())
@@ -139,10 +139,25 @@ void write_utilities_cpp(std::string location)
     outfile << R"""(
 #include "utilities.h"
 
+void usage(std::string binary)
+{
+    // Print CLI usage and exit program.
+    std::stringstream buffer;
+    buffer.str("");
+    buffer << "Usage for )""" << settings.binary_name << R"""(:\n";
+    std::cout << buffer.str() << std::endl;
+    exit(0);
+}
+
+
 Settings::Settings(int argc, char** argv)
 {
     for (int i = 1; i < argc; i++)
     {
+        if (((std::string)argv[i] == "--help") || ((std::string)argv[i] == "-h" ))
+        {
+            usage(argv[0]);
+        }
         // handling of default globals first.
         if ((std::string)argv[i] == "--debug")
         {
@@ -179,9 +194,9 @@ Settings::~Settings()
 
 }
 
-void write_globals_h(std::string location)
+void write_globals_h(Settings settings)
 {
-    fs::path sourcefile = location;
+    fs::path sourcefile = settings.location;
     sourcefile /= "include/globals.h";
     std::ofstream outfile(sourcefile,std::ios::out);
     if (!outfile.is_open())
@@ -206,9 +221,9 @@ extern bool DRYRUN;
     outfile.close();
 }
 
-void write_globals_cpp(std::string location)
+void write_globals_cpp(Settings settings)
 {
-    fs::path sourcefile = location;
+    fs::path sourcefile = settings.location;
     sourcefile /= "src/globals.cpp";
     std::ofstream outfile(sourcefile,std::ios::out);
     if (!outfile.is_open())
@@ -233,9 +248,9 @@ bool DRYRUN = false;
 
 }
 
-void write_constants_h(std::string location)
+void write_constants_h(Settings settings)
 {
-    fs::path sourcefile = location;
+    fs::path sourcefile = settings.location;
     sourcefile /= "include/constants.h";
     std::ofstream outfile(sourcefile,std::ios::out);
     if (!outfile.is_open())
@@ -257,9 +272,9 @@ const double PI = 3.141592653;
     outfile.close();
 }
 
-void write_utilities_h(std::string location)
+void write_utilities_h(Settings settings)
 {
-    fs::path sourcefile = location;
+    fs::path sourcefile = settings.location;
     sourcefile /= "include/utilities.h";
     std::ofstream outfile(sourcefile,std::ios::out);
     if (!outfile.is_open())
@@ -297,9 +312,9 @@ class Settings
 
 }
 
-void write_config_h(std::string location)
+void write_config_h(Settings settings)
 {
-    fs::path sourcefile = location;
+    fs::path sourcefile = settings.location;
     sourcefile /= "include/config.h";
 
     std::ofstream outfile(sourcefile,std::ios::out);
@@ -317,18 +332,18 @@ void write_config_h(std::string location)
 }
 
 
-void WriteSourceFiles(std::string location, std::string binary_name)
+void WriteSourceFiles(Settings settings)
 {
     // source files (.cpp)
-    write_main_cpp(location,binary_name);
-    write_utilities_cpp(location);
-    write_globals_cpp(location);
+    write_main_cpp(settings);
+    write_utilities_cpp(settings);
+    write_globals_cpp(settings);
 
     // header files (.h)
-    write_utilities_h(location);
-    write_config_h(location);
-    write_globals_h(location);
-    write_constants_h(location);
+    write_utilities_h(settings);
+    write_config_h(settings);
+    write_globals_h(settings);
+    write_constants_h(settings);
 
 }
 
