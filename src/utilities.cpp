@@ -87,7 +87,7 @@ clean:
 	@$(RM) -rv $(BIN_DIR) $(OBJ_DIR)
 
 install: $(EXE)
-	ln -sf $(abspath $(EXE)) $(INS_DIR)/""" << binary_name << R"""(
+	ln -sf $(abspath $(EXE)) $(INS_DIR)/)""" << binary_name << R"""(
 
 -include $(OBJ:.o=.d)
 )""";
