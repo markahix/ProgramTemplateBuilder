@@ -20,6 +20,7 @@ class Settings
         ~Settings();
         std::string location;
         std::string binary_name;
+        std::string remote_git_location;
 };
 
 // Handle Directories
@@ -31,7 +32,12 @@ void CreateMakefile(std::string location, std::string binary_name);
 // Write source cpp files.
 void WriteSourceFiles(std::string location, std::string binary_name);
 
+// Generate basic README.md template for user to fill
+void GenerateReadme(Settings settings);
 
+// Generate .gitignore and perform git setup
+void GitSetup(Settings settings);
+void GitFinisher(Settings settings);
 
 
 #endif

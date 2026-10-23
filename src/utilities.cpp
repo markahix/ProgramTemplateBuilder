@@ -4,6 +4,7 @@ Settings::Settings(int argc, char** argv)
 {
         location="./";
         binary_name="new_program";
+        remote_git_location="";
         for (int i = 1; i < argc; i++)
         {
             if ((std::string)argv[i] == "--location")
@@ -18,6 +19,13 @@ Settings::Settings(int argc, char** argv)
                 i++;
                 continue;
             }
+            if ((std::string)argv[i] == "--remote")
+            {
+                remote_git_location = (std::string)argv[i+1];
+                i++;
+                continue;
+            }
+            std::cout << "Unrecognized command line argument: " << (std::string)argv[i] << std::endl;
         }
 
 }
@@ -323,3 +331,80 @@ void WriteSourceFiles(std::string location, std::string binary_name)
     write_constants_h(location);
 
 }
+
+// Generate basic README.md template for user to fill
+void GenerateReadme(Settings settings)
+{
+    fs::path sourcefile = settings.location;
+    sourcefile /= "README.md";
+    std::ofstream outfile(sourcefile,std::ios::out);
+    if (!outfile.is_open())
+    {
+        std::cerr << "Unable to open " << sourcefile << " for writing. Terminating job. " << std::endl;
+        exit(1);
+    }
+    std::string folder_name = sourcefile.parent_path().filename();
+    outfile << "# " << folder_name << std::endl;
+    outfile << "This is the initial README for `" << settings.binary_name << "`." << std::endl << std::endl;
+    outfile << "### Usage " << std::endl;
+    outfile << "```"<<std::endl << settings.binary_name << " \\ " << std::endl;
+    outfile << R"""(    [--debug] \
+    [--hpc-mode] \
+    [--container] \
+    [--verbose | -v] \
+    [--dryrun]
+```
+
+Command Line Arguments:
+- `--debug` turns on debug mode, which prints absolutely everything it can to `stdout`.
+- `--hpc-mode` identifies the program as being run from a supercomputer or HPC, often with job-scheduling.  Useful for ensuring jobs are not run on login nodes, etc.
+- `--container` is when the program is installed within a container like Docker or Singularity - can be helpful for modifying input and output handling.
+- `--verbose` or `-v` increases the amount of detail in the logging to `stdout`/`stderr`.  Not as much as `debug`, but more than the basics.
+- `--dryrun` is a quick flag for situations when the program should simply report what it would be doing without necessarily doing those tasks - useful for ensuring expected behaviors before performing long tasks.
+)""";
+}
+// bool DEBUG = false;
+// bool HPC_MODE = false;
+// bool CONTAINER_MODE = false;
+// bool VERBOSE_LOGGING = false;
+// bool DRYRUN = false;
+
+// Generate .gitignore and perform git setup
+void GitSetup(Settings settings)
+{
+    fs::path sourcefile = settings.location;
+    sourcefile /= ".gitignore";
+
+    std::ofstream outfile(sourcefile,std::ios::out);
+    if (!outfile.is_open())
+    {
+        std::cerr << "Unable to open " << sourcefile << " for writing. Terminating job. " << std::endl;
+        exit(1);
+    }
+    outfile << R"""(.vscode/
+bin/
+obj/
+)""";
+    outfile.close();
+
+}
+
+void GitFinisher(Settings settings)
+{
+    fs::path start_loc = fs::current_path();
+    fs::current_path(settings.location);
+    // do the git stuff here.
+    system("git init");
+    system("git add .");
+    system("git commit -m \"initial commit \"");
+    system("git branch -M main");
+    if (settings.remote_git_location != "")
+    {
+        std::stringstream buffer;
+        buffer.str("");
+        buffer << "git remote add origin "<<settings.remote_git_location<<"; git push origin main";
+        system(buffer.str().c_str());
+    }
+    fs::current_path(start_loc);
+}
+

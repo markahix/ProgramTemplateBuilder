@@ -15,5 +15,13 @@ int main(int argc, char** argv)
     // generate basic code templates and standard functionalities.
     WriteSourceFiles(settings.location, settings.binary_name);
 
+    // Generate README.md
+    GenerateReadme(settings);
+
+    // Generate .gitignore.
+    GitSetup(settings);
+
+    // Perform git init, first commit, and if able, push to remote repository.
+    GitFinisher(settings);
     return 0;
 }
